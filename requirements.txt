@@ -1,0 +1,37 @@
+# Basic Dependencies
+pandas
+numpy
+
+
+# Plotting Libraries
+matplotlib
+seaborn
+
+
+# Machine Learning
+scikit-learn
+xgboost
+lightgbm
+imblearn
+
+
+# Model Tracking
+mlflow
+
+
+# API Deployment (Backend)
+fastapi
+uvicorn
+
+
+# Frontend / UI Libraries
+streamlit
+gradio
+jinja2        # For FastAPI HTML templates
+python-multipart  # For file uploads in frontend
+
+
+# Utilities
+python-dotenv
+joblib
+scipy
