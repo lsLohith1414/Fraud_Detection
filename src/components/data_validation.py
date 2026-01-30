@@ -174,11 +174,11 @@ class DataValidation:
 
         # 6️⃣ Return artifact
         return DataValidationArtifact(
-            validation_status=overall_status,
+            # validation_status=overall_status,
             valid_train_file_path=valid_train_path,
             valid_test_file_path=valid_test_path,
             drift_report_file_path=self.data_validation_config.drift_report_path,
-            validation_report_file_path=self.data_validation_config.validation_report_path
+            # validation_report_file_path=self.data_validation_config.validation_report_path
         )
 
     # =====================================================
@@ -263,3 +263,48 @@ class DataValidation:
         except Exception as e:
             logger.error("Data Validation pipeline failed", exc_info=True)
             raise CustomException(e)
+
+
+
+
+
+def main():
+    try:
+        from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
+        from src.entities.config.data_ingestion_config import DataIngestionConfig
+        from src.entities.artifact.artifacts_entity import DataIngestionAftifacts
+        from src.entities.config.data_validation_config import DataValidationConfig
+        # from src.entities.artifact.artifacts_entity import DataIngestionAftifacts  
+        from src.common.utils import read_yaml
+
+        config = read_yaml(os.path.join("config", "config.yaml"))
+
+        training_pipeline_config = TrainingPipelineConfig(config=config)
+
+        data_validation_config = DataValidationConfig(training_pipeline_config=training_pipeline_config)
+
+        data_ingestion_config = DataIngestionConfig(training_pipeline_config=training_pipeline_config)
+        data_ingeted_train_path = data_ingestion_config.ingested_train_file_path
+        data_ingeted_test_path = data_ingestion_config.ingested_test_file_path
+
+        data_ingestion_artifact = DataIngestionAftifacts(data_ingeted_train_path,data_ingeted_test_path)
+        
+        print("abc")
+
+        
+        data_validation = DataValidation(data_validation_config=data_validation_config, data_ingestion_artifact=data_ingestion_artifact)
+        data_validation_artifact = data_validation.initiate_data_validation()
+        print(data_validation_artifact)
+
+
+        
+
+
+    except Exception as e:
+        logger.error("Data ingestion stage failed", exc_info=True)
+        raise CustomException(e)
+
+
+
+if __name__ == "__main__":
+    main()

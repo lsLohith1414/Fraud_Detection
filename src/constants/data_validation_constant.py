@@ -8,4 +8,6 @@ REPORT_DIR_NAME = "reports"
 
 DRIFT_REPORT_FILE_NAME = "drift_report.json"
 VALIDATION_REPORT_FILE_NAME = "validation_report.json"
+
+VALID_DATA_DIR_NAME
  

@@ -211,3 +211,53 @@ class ModelTrainer:
         except Exception as e:
             logger.error("Model training failed", exc_info=True)
             raise CustomException(e)
+
+
+
+
+
+
+
+
+
+def main():
+
+    try: 
+
+        from src.common.utils import read_yaml
+        from src.entities.config.training_pipeline_config import TrainingPipelineConfig
+        from src.entities.config.data_transformation_config import DataTransformationConfig
+        from src.entities.artifact.artifacts_entity import DataTransformationArtifact
+
+
+        config = read_yaml(os.path.join("config", "config.yaml"))
+
+        training_pipeline_config = TrainingPipelineConfig(config=config)
+
+        data_transformation_config = DataTransformationConfig(training_pipeline_config)
+
+
+
+        data_transformation_artifact = DataTransformationArtifact(transformed_object_file_path=data_transformation_config.preprocessor_file_path ,
+                                                                  transformed_train_file_path=data_transformation_config.transformed_train_file_path,
+                                                                  transformed_test_file_path=data_transformation_config.transformed_test_file_path)
+
+
+
+        model_trainer_config = ModelTrainerConfig(training_pipeline_config=training_pipeline_config)
+
+
+        model_trainer = ModelTrainer(model_trainer_config= model_trainer_config,data_transformation_artifact=data_transformation_artifact)
+
+        model_trainer.initiate_model_trainer()
+
+
+
+    except Exception as e:
+        logger.error("Data ingestion stage failed", exc_info=True)
+        raise CustomException(e)
+
+
+
+if __name__ == "__main__":
+    main()

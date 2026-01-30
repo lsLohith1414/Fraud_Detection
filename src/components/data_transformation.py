@@ -552,3 +552,48 @@ class DataTransformation:
             logger.error("Data Transformation pipeline failed", exc_info=True)
             raise CustomException(e)
 
+
+
+
+
+
+
+def main():
+    try:
+        from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
+        from src.entities.config.data_validation_config import DataValidationConfig 
+ 
+        
+        from src.entities.config.data_transformation_config import DataTransformationConfig
+        # from src.entities.artifact.artifacts_entity import DataIngestionAftifacts  
+        from src.common.utils import read_yaml
+
+        config = read_yaml(os.path.join("config", "config.yaml"))
+
+        training_pipeline_config = TrainingPipelineConfig(config=config)
+
+        
+
+        data_validation_config = DataValidationConfig(training_pipeline_config=training_pipeline_config)
+        data_valid_train_path = data_validation_config.valid_train_file_path
+        data_valid_test_path = data_validation_config.valid_test_file_path
+        data_valid_drift_report = data_validation_config.drift_report_path
+
+        data_validation_artifact = DataValidationArtifact(valid_train_file_path=data_valid_train_path,valid_test_file_path=data_valid_test_path,drift_report_file_path=data_valid_drift_report)
+
+
+        data_transformation_config = DataTransformationConfig(training_pipeline_config)
+
+        data_transformation = DataTransformation(data_transformation_config=data_transformation_config, data_validation_artifact=data_validation_artifact)
+        data_validation_artifact = data_transformation.initiate_data_transformation()
+        
+
+
+    except Exception as e:
+        logger.error("Data ingestion stage failed", exc_info=True)
+        raise CustomException(e)
+
+
+
+if __name__ == "__main__":
+    main()

@@ -10,11 +10,18 @@ from src.constants.data_validation_constant import (
     REPORT_DIR_NAME
 )
 
+from src.constants.training_pipeline import (
+    TEST_FILE_NAME,
+    TRAIN_FILE_NAME
+)
+
 
 from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
 
 class DataValidationConfig:
-    def __init__(self, config: dict, training_pipeline_config: TrainingPipelineConfig):
+    def __init__(self, training_pipeline_config: TrainingPipelineConfig):
+
+        config=training_pipeline_config.config
 
         dv = config["data_validation"]
 
@@ -50,6 +57,16 @@ class DataValidationConfig:
         self.drift_report_path = os.path.join(
             self.reports_dir,
             DRIFT_REPORT_FILE_NAME
+        )
+
+        self.valid_train_file_path = os.path.join(
+            self.valid_data_dir,
+            TRAIN_FILE_NAME
+        )
+
+        self.valid_test_file_path = os.path.join(
+            self.valid_data_dir,
+            TEST_FILE_NAME
         )
 
 

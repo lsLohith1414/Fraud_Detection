@@ -24,9 +24,10 @@ class DataIngestionConfig:
 
     def __init__(
         self,
-        config: dict,
         training_pipeline_config: TrainingPipelineConfig
     ):
+        
+        config = training_pipeline_config.config
 
         di = config["data_ingestion"]
 

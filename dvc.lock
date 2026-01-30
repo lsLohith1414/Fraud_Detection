@@ -1,0 +1,117 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 7a7f1d6011cd5335a1ebfd803703d99a
+      size: 3892
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: 59fa69090780571a59a6f36486661830
+      size: 7610
+    - path: src/constants/data_ingestion_constant.py
+      hash: md5
+      md5: 8e27234f05da953ba5e2239f4853b513
+      size: 389
+    - path: src/entities/config/data_ingestion_config.py
+      hash: md5
+      md5: 82d76da323ddf7db7d03519afb286d3b
+      size: 1956
+    outs:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: 9a711db75f74341a6daef11fae6cf5a7.dir
+      size: 375182
+      nfiles: 3
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: 9a711db75f74341a6daef11fae6cf5a7.dir
+      size: 375182
+      nfiles: 3
+    - path: config/config.yaml
+      hash: md5
+      md5: 7a7f1d6011cd5335a1ebfd803703d99a
+      size: 3892
+    - path: src/components/data_validation.py
+      hash: md5
+      md5: 07100070592c71a9dd4f98399aaa2fd4
+      size: 11060
+    - path: src/constants/data_validation_constant.py
+      hash: md5
+      md5: 10120b0a9286ca93f7eb5858008ae984
+      size: 319
+    - path: src/entities/config/data_validation_config.py
+      hash: md5
+      md5: 225df760853d2e7b16bb15dbafe12808
+      size: 1929
+    outs:
+    - path: artifacts/data_validation
+      hash: md5
+      md5: de1f54b05e933e8d73e99e2e7dda4a70.dir
+      size: 189088
+      nfiles: 4
+  data_transformation:
+    cmd: python -m src.components.data_transformation
+    deps:
+    - path: artifacts/data_validation
+      hash: md5
+      md5: de1f54b05e933e8d73e99e2e7dda4a70.dir
+      size: 189088
+      nfiles: 4
+    - path: config/config.yaml
+      hash: md5
+      md5: 7a7f1d6011cd5335a1ebfd803703d99a
+      size: 3892
+    - path: src/components/data_transformation.py
+      hash: md5
+      md5: 59f5390630f4d21c9fecb4194395ecfc
+      size: 20522
+    - path: src/constants/data_transformation_constant.py
+      hash: md5
+      md5: 1dd1ba36556779df2ce0acf5fe85d757
+      size: 260
+    - path: src/entities/config/data_transformation_config.py
+      hash: md5
+      md5: 113b1e8c5e4b0fd511ac6e5dbd87e447
+      size: 1744
+    outs:
+    - path: artifacts/data_transformation
+      hash: md5
+      md5: 6a07610041a7dbc670057c1054a87d6b.dir
+      size: 573114
+      nfiles: 3
+  model_trainer:
+    cmd: python -m src.components.model_trainer
+    deps:
+    - path: artifacts/data_transformation
+      hash: md5
+      md5: 6a07610041a7dbc670057c1054a87d6b.dir
+      size: 573114
+      nfiles: 3
+    - path: config/config.yaml
+      hash: md5
+      md5: 7a7f1d6011cd5335a1ebfd803703d99a
+      size: 3892
+    - path: src/components/model_trainer.py
+      hash: md5
+      md5: 028348fbd4dc46d58d08ff7121235775
+      size: 8891
+    - path: src/constants/model_trainer_constants.py
+      hash: md5
+      md5: e7acb5f9c7cb4263343a239afb1d7bdb
+      size: 245
+    - path: src/entities/config/model_trainer_config.py
+      hash: md5
+      md5: eb2eac531af9cbbfa06588f002611e3f
+      size: 1012
+    outs:
+    - path: artifacts/model_trainer
+      hash: md5
+      md5: 36297ef148973e02fa705543df6029a4.dir
+      size: 1161393
+      nfiles: 5

@@ -210,7 +210,10 @@ __marimo__/
 
 
 Learning_from_project/
-artifacts/
+artifacts/data_ingestion
+artifacts/data_transformation
+artifacts/data_validation
+artifacts/model_trainer
 .ipynb_checkpoints/
 Fraud_dataset/
 logs/

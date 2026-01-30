@@ -98,6 +98,7 @@ class DataIngestion:
                 f"Dataset merge completed successfully. Final shape: {df.shape}"
             )
 
+
             return df
 
         except Exception as e:
@@ -192,3 +193,53 @@ class DataIngestion:
                 exc_info=True
             )
             raise CustomException(e)
+
+
+
+
+
+
+
+
+
+##################### Train Pipeline Config #####################
+
+
+
+##################### Data Ingestion ##################### 
+
+# -------------------- Data Ingestion Config --------------------
+
+
+# -------------------- Initate Data ingestion --------------------
+
+
+
+
+def main():
+    try:
+        from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
+        # from src.entities.artifact.artifacts_entity import DataIngestionAftifacts  
+        from src.common.utils import read_yaml
+
+        config = read_yaml(os.path.join("config", "config.yaml"))
+
+        training_pipeline_config = TrainingPipelineConfig(config=config)
+
+        data_ingestion_config = DataIngestionConfig(training_pipeline_config=training_pipeline_config)
+
+        data_ingestion = DataIngestion(data_ingestion_config=data_ingestion_config)
+
+        data_ingestion_artifact = data_ingestion.run_data_ingestion()
+
+
+    except Exception as e:
+        logger.error("Data ingestion stage failed", exc_info=True)
+        raise CustomException(e)
+
+
+
+if __name__ == "__main__":
+    main()
+
+

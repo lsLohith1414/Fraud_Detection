@@ -17,7 +17,7 @@ from src.components.data_validation import DataValidation
 
 
 
-
+from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
 config_path = os.path.join(os.getcwd(), "config", "config.yaml")
 
 config = read_yaml(config_path)

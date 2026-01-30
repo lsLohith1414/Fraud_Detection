@@ -1,0 +1,46 @@
+stages:
+
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+      - src/components/data_ingestion.py
+      - src/entities/config/data_ingestion_config.py
+      - src/constants/data_ingestion_constant.py
+      - config/config.yaml
+    outs:
+      - artifacts/data_ingestion
+
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+      - src/components/data_validation.py
+      - src/entities/config/data_validation_config.py
+      - src/constants/data_validation_constant.py
+      - config/config.yaml
+      - artifacts/data_ingestion
+    outs:
+      - artifacts/data_validation
+
+
+  data_transformation:
+    cmd: python -m src.components.data_transformation
+    deps:
+      - src/components/data_transformation.py
+      - src/entities/config/data_transformation_config.py
+      - src/constants/data_transformation_constant.py
+      - config/config.yaml
+      - artifacts/data_validation
+    outs:
+      - artifacts/data_transformation
+
+
+  model_trainer:
+    cmd: python -m src.components.model_trainer
+    deps:
+      - src/components/model_trainer.py
+      - src/entities/config/model_trainer_config.py
+      - src/constants/model_trainer_constants.py
+      - config/config.yaml
+      - artifacts/data_transformation
+    outs:
+      - artifacts/model_trainer
