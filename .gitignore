@@ -210,3 +210,10 @@ __marimo__/
 
 
 Learning_from_project/
+artifacts/
+.ipynb_checkpoints/
+Fraud_dataset/
+logs/
+venv/
+Untitled.ipynb
+notebooks/

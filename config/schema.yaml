@@ -1,0 +1,50 @@
+dataset:
+  name: fraud_transactions
+  target_column: FraudIndicator
+  id_column: TransactionID
+
+features:
+  - Amount
+  - TransactionAmount
+  - AnomalyScore
+  - Age
+  - AccountBalance
+  - Category
+  - MerchantName
+  - Location
+  - Address
+  - Name
+  - TransactionID
+  - MerchantID
+  - CustomerID  
+  - SuspiciousFlag 
+  - Timestamp
+  - LastLogin
+  - FraudIndicator
+
+
+
+
+
+data_quality:
+  missing_values:
+    allowed_missing_ratio: 0.05
+
+  value_ranges:
+    Amount:
+      min: 0
+      max: 1000000
+    TransactionAmount:
+      min: 0
+      max: 1000000
+    Age:
+      min: 18
+      max: 100
+    AccountBalance:
+      min: -100000
+      max: 10000000
+
+drift_monitoring:
+  numerical_method: kolmogorov_smirnov
+  categorical_method: chi_square
+  threshold: 0.2

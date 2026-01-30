@@ -1,0 +1,136 @@
+# ======================================================
+# PROJECT METADATA
+# ======================================================
+project:
+  name: fraud_detection
+  environment: dev            # dev | staging | prod
+  owner: Lohith HS
+  version: 1.0.0
+ 
+
+# # ======================================================
+# # DATA INGESTION
+# # ======================================================
+data_ingestion:
+  data_root_dir: Fraud_dataset/Data
+  source_folders:
+    - Customer Profiles
+    - Transaction Data
+    - Merchant Information
+    - Transaction Amounts
+    - Fraudulent Patterns
+
+  train_test_split_ratio: 0.2
+
+# ======================================================
+# TRAINING PIPELINE
+# ======================================================
+training_pipeline:
+  target_column: FraudIndicator
+
+# ======================================================
+# DATA VALIDATION
+# ======================================================
+data_validation:
+  schema_path: config/schema.yaml
+  missing_value_threshold: 0.3
+  drift_threshold: 0.2
+
+
+
+# # ======================================================
+# # DATA TRANSFORMATION (GUIDANCE ONLY)
+# # ======================================================
+data_transformation:
+  numerical_scaler: standard        # standard | minmax | robust
+  categorical_encoder: onehot       # onehot | ordinal
+  handle_unknown: ignore            # for categorical encoders
+  drop_identifiers: true
+  datetime_handling: extract_parts  # extract_parts | drop
+
+
+
+# Model training
+model_training:
+  model_registry:
+    model_name: fraud_detection_model_LGBM_boss
+    model_alias: champion
+
+  evaluation:
+    primary_metric: pr_auc
+    minimum_improvement: 0.0   # can be used for gating later
+
+  target_column: FraudIndicator
+
+
+
+
+
+
+# # ======================================================
+# # DATA INGESTION
+# # ======================================================
+# data_ingestion:
+#   source_type: csv
+#   raw_data_path: Fraud_dataset/Data
+#   train_test_split_ratio: 0.2
+#   random_state: 42
+
+# # ======================================================
+# # DATA VALIDATION
+# # ======================================================
+# data_validation:
+#   schema_path: config/schema.yaml
+#   drift_check: true
+#   missing_value_threshold: 0.05
+#   artifact_dir: artifacts/data_validation
+
+
+# # ======================================================
+# # DATA TRANSFORMATION (GUIDANCE ONLY)
+# # ======================================================
+# data_transformation:
+#   artifact_dir: artifacts/data_transformation
+#   encoding_type: one_hot          # guidance, not logic
+#   scaler_type: standard           # guidance, not logic
+#   datetime_columns:
+#     - Timestamp
+#     - LastLogin
+
+
+# # ======================================================
+# # MODEL REGISTRY (MLFLOW)
+# # ======================================================
+# model_registry:
+#   tool: mlflow
+#   model_name: fraud_detection_model
+#   alias: production               # production | staging
+
+
+# # ======================================================
+# # TRAINING RULES
+# # ======================================================
+# training:
+#   evaluation_metric: pr_auc
+#   minimum_improvement: 0.01
+#   artifact_dir: artifacts/model_training
+
+
+# # ======================================================
+# # EVALUATION / GATING
+# # ======================================================
+# evaluation:
+#   compare_with_production: true
+#   fail_pipeline_if_worse: true
+#   metrics:
+#     primary: pr_auc
+#     secondary:
+#       - recall
+#       - precision
+
+
+# # ======================================================
+# # DEPLOYMENT
+# # ======================================================
+# deployment:
+#   enable_deployment: false

@@ -17,6 +17,7 @@ imblearn
 
 # Model Tracking
 mlflow
+dagshub
 
 
 # API Deployment (Backend)
@@ -35,3 +36,7 @@ python-multipart  # For file uploads in frontend
 python-dotenv
 joblib
 scipy
+
+
+# Version control
+dvc
