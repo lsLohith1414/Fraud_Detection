@@ -1,5 +1,6 @@
 # import os
 # import json
+# import yaml
 # import mlflow
 # import pandas as pd
 
@@ -13,7 +14,7 @@
 #     f1_score,
 #     classification_report,
 #     confusion_matrix,
-#     average_precision_score
+#     average_precision_score,
 # )
 
 # from src.common.logger import get_logger
@@ -22,7 +23,7 @@
 # from src.entities.artifact.artifacts_entity import (
 #     DataTransformationArtifact,
 #     ModelTrainerArtifact,
-#     ClassificationMetricArtifact
+#     ClassificationMetricArtifact,
 # )
 
 # logger = get_logger(__name__)
@@ -53,12 +54,11 @@
 #     def __init__(
 #         self,
 #         model_trainer_config: ModelTrainerConfig,
-#         data_transformation_artifact: DataTransformationArtifact
+#         data_transformation_artifact: DataTransformationArtifact,
 #     ):
 #         self.config = model_trainer_config
 #         self.data_artifact = data_transformation_artifact
 
-#         # 🔐 Ensure DagsHub authentication is set externally
 #         username = os.getenv("MLFLOW_TRACKING_USERNAME")
 #         password = os.getenv("MLFLOW_TRACKING_PASSWORD")
 
@@ -67,16 +67,14 @@
 #                 "MLFLOW_TRACKING_USERNAME or MLFLOW_TRACKING_PASSWORD not set"
 #             )
 
-#         # 🌐 Set DagsHub MLflow tracking
 #         mlflow.set_tracking_uri(
 #             "https://dagshub.com/lsLohith1414/Fraud_Detection.mlflow"
 #         )
 #         mlflow.set_experiment("Network_security_main")
 
 #         self.client = MlflowClient()
+#         print("pass")
 
-#     # --------------------------------------------------
-#     # MAIN TRAINING PIPELINE
 #     # --------------------------------------------------
 #     def initiate_model_trainer(self) -> ModelTrainerArtifact:
 #         try:
@@ -104,64 +102,85 @@
 #                 model.fit(X_train, y_train)
 
 #                 # ================= EVALUATE =================
-#                 metrics = evaluate_classification_model(
-#                     model, X_test, y_test
+#                 metrics = evaluate_classification_model(model, X_test, y_test)
+
+#                 # ================= LOG TO MLFLOW =================
+#                 mlflow.log_metrics(
+#                     {
+#                         "accuracy": metrics["accuracy"],
+#                         "precision": metrics["precision"],
+#                         "recall": metrics["recall"],
+#                         "f1_score": metrics["f1_score"],
+#                         "pr_auc": metrics["pr_auc"],
+#                     }
 #                 )
 
-#                 # ================= LOG NUMERIC METRICS =================
-#                 mlflow.log_metrics({
+#                 mlflow.log_params(params)
+
+#                 mlflow.log_text(
+#                     json.dumps(metrics["confusion_matrix"].tolist()),
+#                     "confusion_matrix.json",
+#                 )
+
+#                 mlflow.log_text(
+#                     metrics["classification_report"], "classification_report.txt"
+#                 )
+
+#                 mlflow.sklearn.log_model(
+#                     model,
+#                     artifact_path="model",
+#                     registered_model_name="network_security_lgbm",
+#                 )
+
+#                 # ================= SAVE LOCALLY =================
+#                 artifact_dir = os.path.dirname(self.config.trained_model_path)
+#                 os.makedirs(artifact_dir, exist_ok=True)
+
+#                 # Save model locally
+#                 mlflow.sklearn.save_model(
+#                     sk_model=model, path=self.config.trained_model_path
+#                 )
+
+#                 # Save numeric metrics as JSON
+#                 numeric_metrics = {
 #                     "accuracy": metrics["accuracy"],
 #                     "precision": metrics["precision"],
 #                     "recall": metrics["recall"],
 #                     "f1_score": metrics["f1_score"],
 #                     "pr_auc": metrics["pr_auc"],
-#                 })
+#                 }
 
-#                 # ================= LOG PARAMETERS =================
-#                 mlflow.log_params(params)
+#                 with open(os.path.join(artifact_dir, "metrics.json"), "w") as f:
+#                     json.dump(numeric_metrics, f, indent=4)
 
-#                 # ================= LOG TEXT ARTIFACTS =================
-#                 mlflow.log_text(
-#                     json.dumps(metrics["confusion_matrix"].tolist()),
-#                     "confusion_matrix.json"
-#                 )
+#                 # Save confusion matrix
+#                 with open(
+#                     os.path.join(artifact_dir, "confusion_matrix.json"), "w"
+#                 ) as f:
+#                     json.dump(metrics["confusion_matrix"].tolist(), f, indent=4)
 
-#                 mlflow.log_text(
-#                     metrics["classification_report"],
-#                     "classification_report.txt"
-#                 )
+#                 # Save classification report
+#                 with open(
+#                     os.path.join(artifact_dir, "classification_report.txt"), "w"
+#                 ) as f:
+#                     f.write(metrics["classification_report"])
 
-#                 # ================= REGISTER MODEL =================
-#                 mlflow.sklearn.log_model(
-#                     model,
-#                     artifact_path="model",
-#                     registered_model_name="network_security_lgbm"
-#                 )
-
-#                 # ================= SAVE LOCALLY (ARTIFACT FOLDER) =================
-#                 os.makedirs(
-#                     os.path.dirname(self.config.trained_model_path),
-#                     exist_ok=True
-#                 )
-
-#                 mlflow.sklearn.save_model(
-#                     sk_model=model,
-#                     path=self.config.trained_model_path
-#                 )
+#                 # Optional: Save YAML version
+#                 with open(os.path.join(artifact_dir, "metrics.yaml"), "w") as f:
+#                     yaml.dump(numeric_metrics, f)
 
 #             logger.info("Model training completed successfully")
 
-#             # ================= RETURN STRUCTURED METRICS =================
 #             test_metrics = ClassificationMetricArtifact(
 #                 precision_score=metrics["precision"],
 #                 recall_score=metrics["recall"],
-#                 f1_score=metrics["f1_score"]
+#                 f1_score=metrics["f1_score"],
 #             )
 
 #             return ModelTrainerArtifact(
 #                 trained_model_file_path=self.config.trained_model_path,
 #                 train_metric_artifact=None,
-#                 test_metric_artifact=test_metrics
+#                 test_metric_artifact=test_metrics,
 #             )
 
 #         except Exception as e:
@@ -170,15 +189,15 @@
 
 
 # # ======================================================
-# # MAIN ENTRY POINT
+# # MAIN
 # # ======================================================
 # def main():
 #     try:
 #         from src.common.utils import read_yaml
 #         from src.entities.config.training_pipeline_config import TrainingPipelineConfig
-#         from src.entities.config.data_transformation_config import DataTransformationConfig
-
-#         logger.info("Reading configuration")
+#         from src.entities.config.data_transformation_config import (
+#             DataTransformationConfig,
+#         )
 
 #         config = read_yaml(os.path.join("config", "config.yaml"))
 
@@ -188,7 +207,7 @@
 #         data_transformation_artifact = DataTransformationArtifact(
 #             transformed_object_file_path=data_transformation_config.preprocessor_file_path,
 #             transformed_train_file_path=data_transformation_config.transformed_train_file_path,
-#             transformed_test_file_path=data_transformation_config.transformed_test_file_path
+#             transformed_test_file_path=data_transformation_config.transformed_test_file_path,
 #         )
 
 #         model_trainer_config = ModelTrainerConfig(
@@ -197,34 +216,32 @@
 
 #         model_trainer = ModelTrainer(
 #             model_trainer_config=model_trainer_config,
-#             data_transformation_artifact=data_transformation_artifact
+#             data_transformation_artifact=data_transformation_artifact,
 #         )
 
 #         model_trainer.initiate_model_trainer()
-
-#         logger.info("Training pipeline finished successfully")
 
 #     except Exception as e:
 #         logger.error("Training pipeline failed", exc_info=True)
 #         raise CustomException(e)
 
 
-# # ======================================================
-# # SCRIPT EXECUTION
-# # ======================================================
 # if __name__ == "__main__":
 #     main()
+
+
 
 
 import os
 import json
 import yaml
+import joblib
 import mlflow
 import pandas as pd
 
 from lightgbm import LGBMClassifier
 from mlflow.tracking import MlflowClient
-
+from sklearn.pipeline import Pipeline
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -243,6 +260,7 @@ from src.entities.artifact.artifacts_entity import (
     ModelTrainerArtifact,
     ClassificationMetricArtifact,
 )
+from src.inference.feature_engineering import FeatureEngineeringTransformer
 
 logger = get_logger(__name__)
 
@@ -279,19 +297,17 @@ class ModelTrainer:
 
         username = os.getenv("MLFLOW_TRACKING_USERNAME")
         password = os.getenv("MLFLOW_TRACKING_PASSWORD")
+        tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
 
-        if not username or not password:
+        if not username or not password or not tracking_uri:
             raise ValueError(
-                "MLFLOW_TRACKING_USERNAME or MLFLOW_TRACKING_PASSWORD not set"
+                "MLFLOW_TRACKING_URI, USERNAME or PASSWORD not set"
             )
 
-        mlflow.set_tracking_uri(
-            "https://dagshub.com/lsLohith1414/Fraud_Detection.mlflow"
-        )
+        mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment("Network_security_main")
 
         self.client = MlflowClient()
-        print("pass")
 
     # --------------------------------------------------
     def initiate_model_trainer(self) -> ModelTrainerArtifact:
@@ -315,23 +331,35 @@ class ModelTrainer:
 
             with mlflow.start_run(run_name=model_name):
 
-                # ================= TRAIN =================
+                # ================= TRAIN MODEL =================
                 model = LGBMClassifier(**params)
                 model.fit(X_train, y_train)
 
                 # ================= EVALUATE =================
-                metrics = evaluate_classification_model(model, X_test, y_test)
-
-                # ================= LOG TO MLFLOW =================
-                mlflow.log_metrics(
-                    {
-                        "accuracy": metrics["accuracy"],
-                        "precision": metrics["precision"],
-                        "recall": metrics["recall"],
-                        "f1_score": metrics["f1_score"],
-                        "pr_auc": metrics["pr_auc"],
-                    }
+                metrics = evaluate_classification_model(
+                    model, X_test, y_test
                 )
+
+                # ================= LOAD PREPROCESSOR =================
+                preprocessor = joblib.load(
+                    self.data_artifact.transformed_object_file_path
+                )
+
+                # ================= BUILD FULL INFERENCE PIPELINE =================
+                full_pipeline = Pipeline(steps=[
+                    ("feature_engineering", FeatureEngineeringTransformer()),
+                    ("preprocessor", preprocessor),
+                    ("model", model),
+                ])
+
+                # ================= LOG METRICS =================
+                mlflow.log_metrics({
+                    "accuracy": metrics["accuracy"],
+                    "precision": metrics["precision"],
+                    "recall": metrics["recall"],
+                    "f1_score": metrics["f1_score"],
+                    "pr_auc": metrics["pr_auc"],
+                })
 
                 mlflow.log_params(params)
 
@@ -341,25 +369,26 @@ class ModelTrainer:
                 )
 
                 mlflow.log_text(
-                    metrics["classification_report"], "classification_report.txt"
+                    metrics["classification_report"],
+                    "classification_report.txt",
                 )
 
+                # ================= LOG FULL PIPELINE =================
                 mlflow.sklearn.log_model(
-                    model,
+                    full_pipeline,
                     artifact_path="model",
                     registered_model_name="network_security_lgbm",
                 )
 
                 # ================= SAVE LOCALLY =================
-                artifact_dir = os.path.dirname(self.config.trained_model_path)
+                artifact_dir = os.path.dirname(
+                    self.config.trained_model_path
+                )
                 os.makedirs(artifact_dir, exist_ok=True)
 
-                # Save model locally
-                mlflow.sklearn.save_model(
-                    sk_model=model, path=self.config.trained_model_path
-                )
+                joblib.dump(full_pipeline, self.config.trained_model_path)
 
-                # Save numeric metrics as JSON
+                # Save numeric metrics locally
                 numeric_metrics = {
                     "accuracy": metrics["accuracy"],
                     "precision": metrics["precision"],
@@ -371,19 +400,19 @@ class ModelTrainer:
                 with open(os.path.join(artifact_dir, "metrics.json"), "w") as f:
                     json.dump(numeric_metrics, f, indent=4)
 
-                # Save confusion matrix
                 with open(
                     os.path.join(artifact_dir, "confusion_matrix.json"), "w"
                 ) as f:
-                    json.dump(metrics["confusion_matrix"].tolist(), f, indent=4)
+                    json.dump(
+                        metrics["confusion_matrix"].tolist(), f, indent=4
+                    )
 
-                # Save classification report
                 with open(
-                    os.path.join(artifact_dir, "classification_report.txt"), "w"
+                    os.path.join(artifact_dir, "classification_report.txt"),
+                    "w",
                 ) as f:
                     f.write(metrics["classification_report"])
 
-                # Optional: Save YAML version
                 with open(os.path.join(artifact_dir, "metrics.yaml"), "w") as f:
                     yaml.dump(numeric_metrics, f)
 
@@ -412,7 +441,9 @@ class ModelTrainer:
 def main():
     try:
         from src.common.utils import read_yaml
-        from src.entities.config.training_pipeline_config import TrainingPipelineConfig
+        from src.entities.config.training_pipeline_config import (
+            TrainingPipelineConfig,
+        )
         from src.entities.config.data_transformation_config import (
             DataTransformationConfig,
         )
@@ -420,7 +451,9 @@ def main():
         config = read_yaml(os.path.join("config", "config.yaml"))
 
         training_pipeline_config = TrainingPipelineConfig(config=config)
-        data_transformation_config = DataTransformationConfig(training_pipeline_config)
+        data_transformation_config = DataTransformationConfig(
+            training_pipeline_config
+        )
 
         data_transformation_artifact = DataTransformationArtifact(
             transformed_object_file_path=data_transformation_config.preprocessor_file_path,
