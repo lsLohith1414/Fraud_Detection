@@ -51,15 +51,36 @@ data_transformation:
 
 # Model training
 model_training:
-  model_registry:
-    model_name: fraud_detection_model_LGBM_boss
-    model_alias: champion
+  model:
+    name: lightgbm
+    framework: lightgbm
+    n_features: 32
+
+  params:
+    boosting_type: gbdt
+    n_estimators: 500
+    learning_rate: 0.05
+    num_leaves: 50
+    max_depth: -1
+    min_child_samples: 50
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_alpha: 0
+    class_weight: null
+
+  training:
+    test_size: 0.2
+    random_state: 42
 
   evaluation:
-    primary_metric: pr_auc
-    minimum_improvement: 0.0   # can be used for gating later
+    primary_metric: f1
+    secondary_metrics:
+      - precision
+      - recall
+      - roc_auc
 
   target_column: FraudIndicator
+
 
 
 

@@ -1,0 +1,7 @@
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/lsLohith1414/Fraud_Detection.dvc
+    auth = basic
+    user = lsLohith1414
+    password = 1975ab666f34230f69ce31f44f97f076912e0f43

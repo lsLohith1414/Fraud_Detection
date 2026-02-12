@@ -4,3 +4,8 @@ TRAINED_MODEL_FILE_NAME: str = "model.pkl"
 
 TRAIN_METRICS_FILE_NAME: str = "train_metrics.json"
 TEST_METRICS_FILE_NAME: str = "test_metrics.json"
+
+
+################# ML Flow constants ###################
+MODEL_REGISTRY_NAME = "fraud_detection_model"
+EXPERIMENT_NAME = "fraud_detection_experiments"

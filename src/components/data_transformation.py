@@ -5,6 +5,7 @@ from typing import List, Tuple, Dict, Any
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import RobustScaler, MinMaxScaler
+from sklearn.compose import ColumnTransformer
 
 from imblearn.combine import SMOTEENN
 
@@ -369,28 +370,55 @@ class DataTransformation:
         return train_resampled
     
 
+    
     def build_preprocessor(
         self,
         ohe,
         scaler: dict,
         categorical_cols: list
-    ) -> dict:
+    ):
         """
-        Build a single preprocessor object from fitted encoder and scalers.
+        Build a REAL sklearn preprocessor for inference only.
+        This does NOT change training behavior.
+        It simply wraps already-fitted objects so we can call .transform().
         """
 
-        preprocessor = {
-            # One-hot encoding
-            "one_hot_encoder": ohe,
-            "categorical_cols": categorical_cols,
+        transformers = []
 
-            # Scalers (already fitted)
-            "robust_scaler": scaler.get("robust_scaler"),
-            "robust_features": scaler.get("robust_features", []),
+        # Robust-scaled numerical features (already fitted)
+        if scaler.get("robust_features"):
+            transformers.append(
+                (
+                    "robust",
+                    scaler["robust_scaler"],
+                    scaler["robust_features"]
+                )
+            )
 
-            "minmax_scaler": scaler.get("minmax_scaler"),
-            "minmax_features": scaler.get("minmax_features", [])
-        }
+        # MinMax-scaled numerical features (already fitted)
+        if scaler.get("minmax_features"):
+            transformers.append(
+                (
+                    "minmax",
+                    scaler["minmax_scaler"],
+                    scaler["minmax_features"]
+                )
+            )
+
+        # One-hot encoded categorical features (already fitted)
+        if categorical_cols:
+            transformers.append(
+                (
+                    "cat",
+                    ohe,
+                    categorical_cols
+                )
+            )
+
+        preprocessor = ColumnTransformer(
+            transformers=transformers,
+            remainder="drop"
+        )
 
         return preprocessor
 
@@ -495,6 +523,9 @@ class DataTransformation:
 
 
             preprocessor = self.build_preprocessor(ohe,scalers,["Category"])
+
+            preprocessor.fit(train_df)
+            
             save_preprocessor(preprocessor,self.data_transformation_config.preprocessor_file_path)
 
 

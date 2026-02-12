@@ -20,9 +20,13 @@ class ModelTrainerConfig:
 
         mt_cfg = config["model_training"]
 
-        self.model_name = mt_cfg["model_registry"]["model_name"]
-        self.model_alias = mt_cfg["model_registry"]["model_alias"]
+        self.model_name = mt_cfg["model"]["name"]
+        self.params = mt_cfg["params"]
+
+        self.training = mt_cfg["training"]
+
         self.target_column = mt_cfg["target_column"]
+        
 
 
         self.model_trainer_dir = os.path.join(

@@ -40,3 +40,12 @@ scipy
 
 # Version control
 dvc
+
+
+# Jupyter notebook
+notebook
+
+
+# Validating Ml system 
+flake8
+pytest
