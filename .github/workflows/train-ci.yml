@@ -55,7 +55,7 @@ jobs:
         run: |
           dvc repro
 
-      # # 3️⃣ Model Performance Gate
-      # - name: Model Performance Gate
-      #   run: |
-      #     python scripts/compare_model.py
+      # 3️⃣ Model Performance Gate
+      - name: Model Performance Gate
+        run: |
+          python scripts/model_performance_gate.py
