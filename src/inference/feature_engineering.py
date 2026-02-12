@@ -138,8 +138,6 @@ class FeatureEngineeringTransformer(BaseEstimator, TransformerMixin):
 
         return df
 
-from sklearn.base import BaseEstimator, TransformerMixin
-
 
 class RemoveUselessFeaturesTransformer(BaseEstimator, TransformerMixin):
 
