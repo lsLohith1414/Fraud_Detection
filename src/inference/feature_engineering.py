@@ -137,3 +137,31 @@ class FeatureEngineeringTransformer(BaseEstimator, TransformerMixin):
         )
 
         return df
+
+from sklearn.base import BaseEstimator, TransformerMixin
+
+
+class RemoveUselessFeaturesTransformer(BaseEstimator, TransformerMixin):
+
+    def __init__(self):
+        self.drop_cols = [
+            "TransactionID",
+            "CustomerID",
+            "MerchantID",
+            "MerchantName",
+            "Name",
+            "Address",
+            "Location",
+            "Timestamp",
+            "LastLogin",
+            "date",
+            "SuspiciousFlag",
+        ]
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        df = X.copy()
+        df = df.drop(columns=self.drop_cols, errors="ignore")
+        return df

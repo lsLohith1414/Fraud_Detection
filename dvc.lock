@@ -99,8 +99,8 @@ stages:
       size: 4181
     - path: src/components/model_trainer.py
       hash: md5
-      md5: 0b4e5cd24dce73626e1f318994d6a380
-      size: 17769
+      md5: aca47d939f8a6e11ee56ee7df2bcab6f
+      size: 17896
     - path: src/constants/model_trainer_constants.py
       hash: md5
       md5: 518cbcc54ea009aa6dcab4fb27c8859d
@@ -112,6 +112,6 @@ stages:
     outs:
     - path: artifacts/model_trainer
       hash: md5
-      md5: 251c8ab561b08bcbd750b76298a48886.dir
-      size: 1168263
+      md5: 8817d5eeaacbea88f82759c40289d39e.dir
+      size: 1168471
       nfiles: 5

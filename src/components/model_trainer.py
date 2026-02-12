@@ -260,7 +260,10 @@ from src.entities.artifact.artifacts_entity import (
     ModelTrainerArtifact,
     ClassificationMetricArtifact,
 )
-from src.inference.feature_engineering import FeatureEngineeringTransformer
+from src.inference.feature_engineering import (
+    FeatureEngineeringTransformer,
+    RemoveUselessFeaturesTransformer,
+)
 
 logger = get_logger(__name__)
 
@@ -348,6 +351,7 @@ class ModelTrainer:
                 # ================= BUILD FULL INFERENCE PIPELINE =================
                 full_pipeline = Pipeline(steps=[
                     ("feature_engineering", FeatureEngineeringTransformer()),
+                    ("remove_useless", RemoveUselessFeaturesTransformer()),
                     ("preprocessor", preprocessor),
                     ("model", model),
                 ])
