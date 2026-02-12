@@ -1,4 +1,4 @@
-from datetime import datetime
+# from datetime import datetime
 import os
 
 from src.constants.training_pipeline import ARTIFACT_DIR_NAME
@@ -10,11 +10,11 @@ class TrainingPipelineConfig:
     Responsible only for artifact root creation.
     """
 
-    def __init__(self, config: dict ): # timestamp: datetime = None
+    def __init__(self, config: dict):  # timestamp: datetime = None
 
         # if timestamp is None:
         #     timestamp = datetime.now()
-        
+
         self.config = config
 
         # self.timestamp = timestamp.strftime("%m_%d_%Y_%H_%M")

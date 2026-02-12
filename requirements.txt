@@ -49,3 +49,4 @@ notebook
 # Validating Ml system 
 flake8
 pytest
+black

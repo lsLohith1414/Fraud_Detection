@@ -1,18 +1,16 @@
 # src/common/utilities.py
-
 import yaml
+import os
 import json
 import pandas as pd
 from scipy.stats import ks_2samp
+import numpy as np
+from typing import Any
+import joblib
 
 def read_yaml(file_path: str) -> dict:
     with open(file_path, "r") as f:
         return yaml.safe_load(f)
- 
-import os
-import json
-import numpy as np
-from typing import Any
 
 
 def make_json_serializable(obj: Any):
@@ -44,39 +42,24 @@ def write_json(file_path: str, content: dict) -> None:
         json.dump(serializable_content, f, indent=4)
 
 
-
 def detect_data_drift(
-    base_df: pd.DataFrame,
-    current_df: pd.DataFrame,
-    threshold: float
+    base_df: pd.DataFrame, current_df: pd.DataFrame, threshold: float
 ) -> dict:
 
     drift_report = {}
 
     for col in base_df.columns:
         if base_df[col].dtype != "object":
-            stat, p_value = ks_2samp(
-                base_df[col].dropna(),
-                current_df[col].dropna()
-            )
+            stat, p_value = ks_2samp(base_df[col].dropna(), current_df[col].dropna())
 
             drift_report[col] = {
                 "p_value": float(p_value),
-                "drift_detected": p_value < threshold
+                "drift_detected": p_value < threshold,
             }
 
     return drift_report
 
-
-
-import joblib
-from typing import Any
-
-
-def save_preprocessor(
-    preprocessor: Any,
-    file_path: str
-) -> None:
+def save_preprocessor(preprocessor: Any, file_path: str) -> None:
     """
     Save a fitted preprocessor (scaler, encoder, pipeline, etc.)
     to a .pkl file.

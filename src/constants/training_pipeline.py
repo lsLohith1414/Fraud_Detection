@@ -24,15 +24,12 @@ PREPROCESSING_OBJECT_FILE_NAME: str = "preprocessing.pkl"
 
 MODEL_REGISTRY_NAME = "fraud_detection_model"
 
-SUPPORTED_MODELS = {
-    "lightgbm": "LGBMClassifier"
-}
+SUPPORTED_MODELS = {"lightgbm": "LGBMClassifier"}
 
 DEFAULT_OBJECTIVE = "binary"
 DEFAULT_BOOSTING_TYPE = "gbdt"
 
 RANDOM_SEED = 42
-
 
 
 ################################################################

@@ -1,5 +1,6 @@
 import sys
-import traceback
+# import traceback
+
 
 def get_custom_exception(error: Exception) -> str:
     """
@@ -12,7 +13,7 @@ def get_custom_exception(error: Exception) -> str:
     else:
         file_name = "<unknown>"
         line_no = "<unknown>"
-        
+
     error_message = f"[Error occurred in script: {file_name} at line {line_no} | Message: {str(error)}]"
     return error_message
 
@@ -25,19 +26,18 @@ class CustomException(Exception):
     By inheriting from Exception, CustomException becomes an object that Python allows to be raised.
     So my formatted text is wrapped inside that object.”
     """
+
     def __init__(self, error: Exception):
         super().__init__(str(error))
         self.error_message = get_custom_exception(error)
 
     def __str__(self):
         return self.error_message
-    
 
 
 # if __name__ == "__main__":
 #     try:
-        
+
 #         x = 10 / 0
 #     except Exception as e:
 #         raise CustomException(e) from e or from none
-

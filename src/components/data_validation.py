@@ -5,11 +5,7 @@ import pandas as pd
 
 from src.common.logger import get_logger
 from src.common.exception import CustomException
-from src.common.utils import (
-    read_yaml,
-    write_json,
-    detect_data_drift
-)
+from src.common.utils import read_yaml, write_json, detect_data_drift
 from src.entities.config.data_validation_config import DataValidationConfig
 from src.entities.artifact.artifacts_entity import DataValidationArtifact
 from src.entities.artifact.artifacts_entity import DataIngestionAftifacts
@@ -18,11 +14,14 @@ logger = get_logger(__name__)
 
 
 class DataValidation:
-    def __init__(self, data_validation_config: DataValidationConfig, data_ingestion_artifact:DataIngestionAftifacts):
+    def __init__(
+        self,
+        data_validation_config: DataValidationConfig,
+        data_ingestion_artifact: DataIngestionAftifacts,
+    ):
         self.data_validation_config = data_validation_config
         self.data_ingestion_artifact = data_ingestion_artifact
         self.schema = read_yaml(self.data_validation_config.schema_path)
-
 
     def validate_schema(self, df: pd.DataFrame, dataset_name: str) -> bool:
 
@@ -41,14 +40,11 @@ class DataValidation:
 
         return True
 
-
     # =====================================================
     # STEP 2: Train / Test Structure Validation
     # =====================================================
     def validate_train_test_structure(
-        self,
-        train_df: pd.DataFrame,
-        test_df: pd.DataFrame
+        self, train_df: pd.DataFrame, test_df: pd.DataFrame
     ) -> bool:
         logger.info("Validating train-test schema consistency")
 
@@ -64,7 +60,9 @@ class DataValidation:
     def validate_missing_values(self, df: pd.DataFrame, dataset_name: str) -> bool:
         logger.info(f"Missing value check started for {dataset_name} dataset")
 
-        threshold = self.schema["data_quality"]["missing_values"]["allowed_missing_ratio"]
+        threshold = self.schema["data_quality"]["missing_values"][
+            "allowed_missing_ratio"
+        ]
         missing_ratio = df.isnull().mean()
 
         invalid_columns = missing_ratio[missing_ratio > threshold]
@@ -100,18 +98,14 @@ class DataValidation:
     # STEP 5: Data Drift Detection (Train vs Test)
     # =====================================================
     def perform_drift_detection(
-        self,
-        train_df: pd.DataFrame,
-        test_df: pd.DataFrame
+        self, train_df: pd.DataFrame, test_df: pd.DataFrame
     ) -> dict:
         logger.info("Data drift detection started (Train vs Test)")
 
         threshold = self.schema["drift_monitoring"]["threshold"]
 
         drift_report = detect_data_drift(
-            base_df=train_df,
-            current_df=test_df,
-            threshold=threshold
+            base_df=train_df, current_df=test_df, threshold=threshold
         )
         logger.info("Data drift detection completed successfully (Train vs Test)")
 
@@ -120,56 +114,41 @@ class DataValidation:
     # =====================================================
     # STEP 6: Save Validation Artifacts
     # =====================================================
- 
+
     def save_validation_artifacts(
         self,
         train_df: pd.DataFrame,
         test_df: pd.DataFrame,
         drift_report: dict,
         validation_report: dict,
-        overall_status: bool
+        overall_status: bool,
     ) -> DataValidationArtifact:
 
         # 1️⃣ Create base validation directory
-        os.makedirs(
-            self.data_validation_config.data_validation_dir,
-            exist_ok=True
-        )
+        os.makedirs(self.data_validation_config.data_validation_dir, exist_ok=True)
 
         # 2️⃣ Create valid data directory
-        os.makedirs(
-            self.data_validation_config.valid_data_dir,
-            exist_ok=True
-        )
+        os.makedirs(self.data_validation_config.valid_data_dir, exist_ok=True)
 
         # 3️⃣ Save validated datasets
         valid_train_path = os.path.join(
-            self.data_validation_config.valid_data_dir,
-            "train.csv"
+            self.data_validation_config.valid_data_dir, "train.csv"
         )
         valid_test_path = os.path.join(
-            self.data_validation_config.valid_data_dir,
-            "test.csv"
+            self.data_validation_config.valid_data_dir, "test.csv"
         )
 
         train_df.to_csv(valid_train_path, index=False)
         test_df.to_csv(valid_test_path, index=False)
 
         # 4️⃣ Create reports directory
-        os.makedirs(
-            self.data_validation_config.reports_dir,
-            exist_ok=True
-        )
+        os.makedirs(self.data_validation_config.reports_dir, exist_ok=True)
 
         # 5️⃣ Save JSON reports (directories auto-created inside write_json)
-        write_json(
-            self.data_validation_config.drift_report_path,
-            drift_report
-        )
+        write_json(self.data_validation_config.drift_report_path, drift_report)
 
         write_json(
-            self.data_validation_config.validation_report_path,
-            validation_report
+            self.data_validation_config.validation_report_path, validation_report
         )
 
         # 6️⃣ Return artifact
@@ -199,7 +178,7 @@ class DataValidation:
             schema_test = self.validate_schema(test_df, "Test")
             validation_report["schema_validation"] = {
                 "train": schema_train,
-                "test": schema_test
+                "test": schema_test,
             }
 
             # Step 2
@@ -211,7 +190,7 @@ class DataValidation:
             missing_test = self.validate_missing_values(test_df, "Test")
             validation_report["missing_value_check"] = {
                 "train": missing_train,
-                "test": missing_test
+                "test": missing_test,
             }
 
             # Step 4
@@ -219,28 +198,28 @@ class DataValidation:
             duplicate_test = self.detect_duplicates(test_df, "Test")
             validation_report["duplicate_record_check"] = {
                 "train": duplicate_train,
-                "test": duplicate_test
+                "test": duplicate_test,
             }
 
             # Step 5
             drift_report = self.perform_drift_detection(train_df, test_df)
-            drift_detected = any(
-                col["drift_detected"] for col in drift_report.values()
-            )
+            drift_detected = any(col["drift_detected"] for col in drift_report.values())
             validation_report["data_drift_detection"] = {
                 "drift_detected": drift_detected
             }
 
             # Final status
-            overall_status = all([
-                schema_train,
-                schema_test,
-                structure_valid,
-                missing_train,
-                missing_test,
-                duplicate_train,
-                duplicate_test
-            ])
+            overall_status = all(
+                [
+                    schema_train,
+                    schema_test,
+                    structure_valid,
+                    missing_train,
+                    missing_test,
+                    duplicate_train,
+                    duplicate_test,
+                ]
+            )
 
             validation_report["overall_validation_status"] = overall_status
 
@@ -249,7 +228,7 @@ class DataValidation:
                 test_df=test_df,
                 drift_report=drift_report,
                 validation_report=validation_report,
-                overall_status=overall_status
+                overall_status=overall_status,
             )
 
             # if not overall_status:
@@ -265,45 +244,46 @@ class DataValidation:
             raise CustomException(e)
 
 
-
-
-
 def main():
     try:
-        from src.entities.config.training_pipeline_config import TrainingPipelineConfig 
+        from src.entities.config.training_pipeline_config import TrainingPipelineConfig
         from src.entities.config.data_ingestion_config import DataIngestionConfig
         from src.entities.artifact.artifacts_entity import DataIngestionAftifacts
         from src.entities.config.data_validation_config import DataValidationConfig
-        # from src.entities.artifact.artifacts_entity import DataIngestionAftifacts  
+
+        # from src.entities.artifact.artifacts_entity import DataIngestionAftifacts
         from src.common.utils import read_yaml
 
         config = read_yaml(os.path.join("config", "config.yaml"))
 
         training_pipeline_config = TrainingPipelineConfig(config=config)
 
-        data_validation_config = DataValidationConfig(training_pipeline_config=training_pipeline_config)
+        data_validation_config = DataValidationConfig(
+            training_pipeline_config=training_pipeline_config
+        )
 
-        data_ingestion_config = DataIngestionConfig(training_pipeline_config=training_pipeline_config)
+        data_ingestion_config = DataIngestionConfig(
+            training_pipeline_config=training_pipeline_config
+        )
         data_ingeted_train_path = data_ingestion_config.ingested_train_file_path
         data_ingeted_test_path = data_ingestion_config.ingested_test_file_path
 
-        data_ingestion_artifact = DataIngestionAftifacts(data_ingeted_train_path,data_ingeted_test_path)
-        
+        data_ingestion_artifact = DataIngestionAftifacts(
+            data_ingeted_train_path, data_ingeted_test_path
+        )
+
         print("abc")
 
-        
-        data_validation = DataValidation(data_validation_config=data_validation_config, data_ingestion_artifact=data_ingestion_artifact)
+        data_validation = DataValidation(
+            data_validation_config=data_validation_config,
+            data_ingestion_artifact=data_ingestion_artifact,
+        )
         data_validation_artifact = data_validation.initiate_data_validation()
         print(data_validation_artifact)
-
-
-        
-
 
     except Exception as e:
         logger.error("Data ingestion stage failed", exc_info=True)
         raise CustomException(e)
-
 
 
 if __name__ == "__main__":

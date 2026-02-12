@@ -216,8 +216,6 @@
 #     main()
 
 
-
-
 import os
 import json
 import yaml
@@ -234,7 +232,7 @@ from sklearn.metrics import (
     f1_score,
     classification_report,
     confusion_matrix,
-    average_precision_score
+    average_precision_score,
 )
 
 from src.common.logger import get_logger
@@ -243,7 +241,7 @@ from src.entities.config.model_trainer_config import ModelTrainerConfig
 from src.entities.artifact.artifacts_entity import (
     DataTransformationArtifact,
     ModelTrainerArtifact,
-    ClassificationMetricArtifact
+    ClassificationMetricArtifact,
 )
 
 logger = get_logger(__name__)
@@ -274,7 +272,7 @@ class ModelTrainer:
     def __init__(
         self,
         model_trainer_config: ModelTrainerConfig,
-        data_transformation_artifact: DataTransformationArtifact
+        data_transformation_artifact: DataTransformationArtifact,
     ):
         self.config = model_trainer_config
         self.data_artifact = data_transformation_artifact
@@ -325,30 +323,31 @@ class ModelTrainer:
                 metrics = evaluate_classification_model(model, X_test, y_test)
 
                 # ================= LOG TO MLFLOW =================
-                mlflow.log_metrics({
-                    "accuracy": metrics["accuracy"],
-                    "precision": metrics["precision"],
-                    "recall": metrics["recall"],
-                    "f1_score": metrics["f1_score"],
-                    "pr_auc": metrics["pr_auc"],
-                })
+                mlflow.log_metrics(
+                    {
+                        "accuracy": metrics["accuracy"],
+                        "precision": metrics["precision"],
+                        "recall": metrics["recall"],
+                        "f1_score": metrics["f1_score"],
+                        "pr_auc": metrics["pr_auc"],
+                    }
+                )
 
                 mlflow.log_params(params)
 
                 mlflow.log_text(
                     json.dumps(metrics["confusion_matrix"].tolist()),
-                    "confusion_matrix.json"
+                    "confusion_matrix.json",
                 )
 
                 mlflow.log_text(
-                    metrics["classification_report"],
-                    "classification_report.txt"
+                    metrics["classification_report"], "classification_report.txt"
                 )
 
                 mlflow.sklearn.log_model(
                     model,
                     artifact_path="model",
-                    registered_model_name="network_security_lgbm"
+                    registered_model_name="network_security_lgbm",
                 )
 
                 # ================= SAVE LOCALLY =================
@@ -357,8 +356,7 @@ class ModelTrainer:
 
                 # Save model locally
                 mlflow.sklearn.save_model(
-                    sk_model=model,
-                    path=self.config.trained_model_path
+                    sk_model=model, path=self.config.trained_model_path
                 )
 
                 # Save numeric metrics as JSON
@@ -374,11 +372,15 @@ class ModelTrainer:
                     json.dump(numeric_metrics, f, indent=4)
 
                 # Save confusion matrix
-                with open(os.path.join(artifact_dir, "confusion_matrix.json"), "w") as f:
+                with open(
+                    os.path.join(artifact_dir, "confusion_matrix.json"), "w"
+                ) as f:
                     json.dump(metrics["confusion_matrix"].tolist(), f, indent=4)
 
                 # Save classification report
-                with open(os.path.join(artifact_dir, "classification_report.txt"), "w") as f:
+                with open(
+                    os.path.join(artifact_dir, "classification_report.txt"), "w"
+                ) as f:
                     f.write(metrics["classification_report"])
 
                 # Optional: Save YAML version
@@ -390,13 +392,13 @@ class ModelTrainer:
             test_metrics = ClassificationMetricArtifact(
                 precision_score=metrics["precision"],
                 recall_score=metrics["recall"],
-                f1_score=metrics["f1_score"]
+                f1_score=metrics["f1_score"],
             )
 
             return ModelTrainerArtifact(
                 trained_model_file_path=self.config.trained_model_path,
                 train_metric_artifact=None,
-                test_metric_artifact=test_metrics
+                test_metric_artifact=test_metrics,
             )
 
         except Exception as e:
@@ -411,7 +413,9 @@ def main():
     try:
         from src.common.utils import read_yaml
         from src.entities.config.training_pipeline_config import TrainingPipelineConfig
-        from src.entities.config.data_transformation_config import DataTransformationConfig
+        from src.entities.config.data_transformation_config import (
+            DataTransformationConfig,
+        )
 
         config = read_yaml(os.path.join("config", "config.yaml"))
 
@@ -421,7 +425,7 @@ def main():
         data_transformation_artifact = DataTransformationArtifact(
             transformed_object_file_path=data_transformation_config.preprocessor_file_path,
             transformed_train_file_path=data_transformation_config.transformed_train_file_path,
-            transformed_test_file_path=data_transformation_config.transformed_test_file_path
+            transformed_test_file_path=data_transformation_config.transformed_test_file_path,
         )
 
         model_trainer_config = ModelTrainerConfig(
@@ -430,7 +434,7 @@ def main():
 
         model_trainer = ModelTrainer(
             model_trainer_config=model_trainer_config,
-            data_transformation_artifact=data_transformation_artifact
+            data_transformation_artifact=data_transformation_artifact,
         )
 
         model_trainer.initiate_model_trainer()

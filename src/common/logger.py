@@ -11,6 +11,7 @@ LOG_FILE_PATH = os.path.join(LOG_DIR, LOG_FILE_NAME)
 
 LOG_FORMAT = "[%(asctime)s] [%(levelname)s] [%(name)s:%(lineno)d] %(message)s"
 
+
 def get_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -22,9 +23,7 @@ def get_logger(name: str) -> logging.Logger:
 
     # File handler (with rotation)
     file_handler = RotatingFileHandler(
-        LOG_FILE_PATH,
-        maxBytes=5 * 1024 * 1024,  # 5 MB
-        backupCount=5
+        LOG_FILE_PATH, maxBytes=5 * 1024 * 1024, backupCount=5  # 5 MB
     )
     file_handler.setFormatter(formatter)
 
