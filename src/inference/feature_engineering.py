@@ -165,8 +165,4 @@ class FeatureEngineeringTransformer(BaseEstimator, TransformerMixin):
 
         df = df.drop(columns=["txn_hour", "txn_weekday", "txn_month"])
 
-
-
         return df
-
-

@@ -6,7 +6,8 @@ ignore =
     E501,
     E266,
     E303,
-    E302
+    E302,
+    W292
 exclude =
     .git,
     __pycache__,
