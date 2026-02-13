@@ -69,8 +69,8 @@ stages:
       size: 4181
     - path: src/components/data_transformation.py
       hash: md5
-      md5: c4298d11f91eac8eb940abe5a61039b4
-      size: 20723
+      md5: 99a5ffadab9674d4ff4b04215c412054
+      size: 5007
     - path: src/constants/data_transformation_constant.py
       hash: md5
       md5: 1dd1ba36556779df2ce0acf5fe85d757
@@ -82,25 +82,25 @@ stages:
     outs:
     - path: artifacts/data_transformation
       hash: md5
-      md5: 4d4c820ae79c9d3aae7447002a0dcb58.dir
-      size: 576540
-      nfiles: 3
+      md5: 0cc415c8fc928316dfb2921b2845daaf.dir
+      size: 187666
+      nfiles: 2
   model_trainer:
     cmd: python -m src.components.model_trainer
     deps:
     - path: artifacts/data_transformation
       hash: md5
-      md5: 4d4c820ae79c9d3aae7447002a0dcb58.dir
-      size: 576540
-      nfiles: 3
+      md5: 0cc415c8fc928316dfb2921b2845daaf.dir
+      size: 187666
+      nfiles: 2
     - path: config/config.yaml
       hash: md5
       md5: dbffa3185dbbb2fb311b1397ec6b4c5d
       size: 4181
     - path: src/components/model_trainer.py
       hash: md5
-      md5: aca47d939f8a6e11ee56ee7df2bcab6f
-      size: 17896
+      md5: 4baff8b663d695728902ee27d7554b04
+      size: 10277
     - path: src/constants/model_trainer_constants.py
       hash: md5
       md5: 518cbcc54ea009aa6dcab4fb27c8859d
@@ -112,6 +112,6 @@ stages:
     outs:
     - path: artifacts/model_trainer
       hash: md5
-      md5: 8817d5eeaacbea88f82759c40289d39e.dir
-      size: 1168471
-      nfiles: 5
+      md5: 9730db25478707385c8b739d4e0f944b.dir
+      size: 1166
+      nfiles: 2

@@ -136,13 +136,8 @@ class FeatureEngineeringTransformer(BaseEstimator, TransformerMixin):
             df["Category"].isin(self.high_risk_categories).astype(int)
         )
 
-        return df
-
-
-class RemoveUselessFeaturesTransformer(BaseEstimator, TransformerMixin):
-
-    def __init__(self):
-        self.drop_cols = [
+        # Drop useless columns
+        drop_cols = [
             "TransactionID",
             "CustomerID",
             "MerchantID",
@@ -152,14 +147,26 @@ class RemoveUselessFeaturesTransformer(BaseEstimator, TransformerMixin):
             "Location",
             "Timestamp",
             "LastLogin",
-            "date",
             "SuspiciousFlag",
         ]
 
-    def fit(self, X, y=None):
-        return self
+        df = df.drop(columns=drop_cols)
 
-    def transform(self, X):
-        df = X.copy()
-        df = df.drop(columns=self.drop_cols, errors="ignore")
+
+        # Cyclic encoding
+        df["txn_hour_sin"] = np.sin(2 * np.pi * df["txn_hour"] / 24)
+        df["txn_hour_cos"] = np.cos(2 * np.pi * df["txn_hour"] / 24)
+
+        df["txn_weekday_sin"] = np.sin(2 * np.pi * df["txn_weekday"] / 7)
+        df["txn_weekday_cos"] = np.cos(2 * np.pi * df["txn_weekday"] / 7)
+
+        df["txn_month_sin"] = np.sin(2 * np.pi * df["txn_month"] / 12)
+        df["txn_month_cos"] = np.cos(2 * np.pi * df["txn_month"] / 12)
+
+        df = df.drop(columns=["txn_hour", "txn_weekday", "txn_month"])
+
+
+
         return df
+
+
