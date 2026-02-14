@@ -99,8 +99,8 @@ stages:
       size: 4181
     - path: src/components/model_trainer.py
       hash: md5
-      md5: 4baff8b663d695728902ee27d7554b04
-      size: 10277
+      md5: 2b22abc51398c6a3613d05df4cde5b8b
+      size: 10262
     - path: src/constants/model_trainer_constants.py
       hash: md5
       md5: 518cbcc54ea009aa6dcab4fb27c8859d
