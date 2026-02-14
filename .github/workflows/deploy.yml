@@ -4,14 +4,14 @@ name: Deploy FastAPI to EC2
 on:
   workflow_dispatch:
 
-env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
 
     steps:
 
@@ -60,7 +60,7 @@ jobs:
       # ==========================
       # 6️⃣ Push Docker Image
       # ==========================
-      - name: Push Docker Image to ECR
+      - name: Push Docker Image
         run: |
           docker push \
           $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
@@ -77,7 +77,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
 
-            # Define ECR URI properly inside EC2
             ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}
 
             echo "Logging into ECR..."
@@ -93,10 +92,14 @@ jobs:
             docker rm fraud-api || true
 
             echo "Starting new container..."
+
             docker run -d \
               -p 8000:8000 \
               --name fraud-api \
               --restart always \
+              -e MLFLOW_TRACKING_URI='${{ secrets.MLFLOW_TRACKING_URI }}' \
+              -e MLFLOW_TRACKING_USERNAME='${{ secrets.MLFLOW_TRACKING_USERNAME }}' \
+              -e MLFLOW_TRACKING_PASSWORD='${{ secrets.MLFLOW_TRACKING_PASSWORD }}' \
               $ECR_URI:latest
 
             echo "Deployment completed successfully."
