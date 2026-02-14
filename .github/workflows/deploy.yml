@@ -1,12 +1,13 @@
 name: Deploy FastAPI to EC2
 
-# 🔹 Manual trigger only
+# 🔹 Manual Trigger Only
 on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ secrets.ECR_REPO_NAME }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   deploy:
@@ -14,12 +15,16 @@ jobs:
 
     steps:
 
-      # 1️⃣ Checkout code
+      # ==========================
+      # 1️⃣ Checkout Repository
+      # ==========================
       - name: Checkout Code
         uses: actions/checkout@v4
 
 
+      # ==========================
       # 2️⃣ Configure AWS Credentials
+      # ==========================
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -28,32 +33,42 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
 
+      # ==========================
       # 3️⃣ Login to Amazon ECR
+      # ==========================
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
 
+      # ==========================
       # 4️⃣ Build Docker Image
+      # ==========================
       - name: Build Docker Image
         run: |
-          docker build -t $IMAGE_NAME .
+          docker build -t $ECR_REPO_NAME .
 
 
+      # ==========================
       # 5️⃣ Tag Docker Image
+      # ==========================
       - name: Tag Docker Image
         run: |
-          docker tag $IMAGE_NAME:latest \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:latest
+          docker tag $ECR_REPO_NAME:latest \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
 
 
-      # 6️⃣ Push Docker Image to ECR
-      - name: Push Docker Image
+      # ==========================
+      # 6️⃣ Push Docker Image
+      # ==========================
+      - name: Push Docker Image to ECR
         run: |
           docker push \
-          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:latest
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:latest
 
 
+      # ==========================
       # 7️⃣ Deploy to EC2
+      # ==========================
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -62,21 +77,26 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
 
-            # Login to ECR from EC2 (IAM Role must be attached)
+            # Define ECR URI properly inside EC2
+            ECR_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}
+
+            echo "Logging into ECR..."
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
             | docker login --username AWS --password-stdin \
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
-            # Pull latest image
-            docker pull \
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:latest
+            echo "Pulling latest image..."
+            docker pull $ECR_URI:latest
 
-            # Stop old container if exists
+            echo "Stopping old container (if exists)..."
             docker stop fraud-api || true
             docker rm fraud-api || true
 
-            # Run new container
+            echo "Starting new container..."
             docker run -d \
               -p 8000:8000 \
               --name fraud-api \
-              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:latest
+              --restart always \
+              $ECR_URI:latest
+
+            echo "Deployment completed successfully."
